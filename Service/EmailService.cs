@@ -1,7 +1,9 @@
 ﻿using BookRentalService.DTO;
 using BookRentalService.Interface;
+using BookRentalService.Model;
 using BookRentalService.Repository;
 using MailKit.Net.Smtp;
+using Microsoft.Extensions.Options;
 using MimeKit;
 
 namespace BookRentalService.Service
@@ -10,10 +12,13 @@ namespace BookRentalService.Service
     {
         private readonly IRentalRepository _rentalRepository;
         private readonly ILogger<EmailService> _logger;
-        public EmailService(IRentalRepository rentalRepository, ILogger<EmailService> logger)
+        private readonly AppSettings _appSettings;
+
+        public EmailService(IRentalRepository rentalRepository, ILogger<EmailService> logger, IOptions<AppSettings> appSettings)
         {
             _rentalRepository = rentalRepository;
             _logger = logger;
+            _appSettings = appSettings.Value;
         }
 
         public async Task SendLastMonthOverdueNotificationAsync()
@@ -38,12 +43,11 @@ namespace BookRentalService.Service
         {
             try
             {
-                var fromAddress = " ";
+                var fromAddress = _appSettings.FromAddress;
+                var fromPassword = _appSettings.FromPassword;
+                string subject = _appSettings.Subject;
+                string smtphost = _appSettings.SmtpHost;
                 var toAddress = userOverDueRental.Email;
-                const string fromPassword = " ";
-                string subject = "Your Book Rental Overdue.";
-
-                string smtphost = "smtp.gmail.com";
 
                 using (var smtpclient = new SmtpClient())
                 {

@@ -1,7 +1,6 @@
 ﻿using BookRentalService.Model;
 using Hangfire;
 using Hangfire.Console;
-using Microsoft.Extensions.Options;
 
 public static class ServiceCollectionExtensions
 {

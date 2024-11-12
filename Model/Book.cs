@@ -11,5 +11,4 @@
         public int TimesRented { get; set; }
         public DateTime RowVersion { get; set; }
     }
-
 }

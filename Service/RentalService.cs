@@ -2,6 +2,7 @@
 using BookRentalService.Interface;
 using BookRentalService.Model;
 using BookRentalService.Repository;
+using Microsoft.Extensions.Options;
 
 namespace BookRentalService.Service
 {
@@ -9,11 +10,13 @@ namespace BookRentalService.Service
     {
         private readonly IBookRepository _bookRepository;
         private readonly IRentalRepository _rentalRepository;
+        private readonly AppSettings _appSettings;
 
-        public RentalService(IBookRepository bookRepository, IRentalRepository rentalRepository)
+        public RentalService(IBookRepository bookRepository, IRentalRepository rentalRepository, IOptions<AppSettings> appSettings)
         {
             _bookRepository = bookRepository;
             _rentalRepository = rentalRepository;
+            _appSettings = appSettings.Value;
         }
 
         public async Task<List<RentalHistoryDto>> GetAllRentalHistoryAsync()
@@ -31,10 +34,12 @@ namespace BookRentalService.Service
             if (!book.IsAvailable)
                 throw new InvalidOperationException("Book is currently unavailable.");
 
+            var maxDaysRentedDuration = _appSettings.MaxDaysRentDuration;
             var rental = new Rental
             {
                 UserId = userId,
                 BookId = bookId,
+                NoOfDays = maxDaysRentedDuration,
                 RentedOnDate = DateTime.Now
             };
 
@@ -68,7 +73,8 @@ namespace BookRentalService.Service
 
         public async Task MarkOverdueRentalsAsync()
         {
-            var overduePeriod = TimeSpan.FromDays(14); //2 week
+            var maxDaysRentedDuration = _appSettings.MaxDaysRentDuration;
+            var overduePeriod = TimeSpan.FromDays(maxDaysRentedDuration);
             var currentDate = DateTime.UtcNow;
 
             var overdueRentals = _rentalRepository.GetPendingOverdueRentalsAsync(overduePeriod, currentDate).Result;

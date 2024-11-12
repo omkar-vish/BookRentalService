@@ -1,5 +1,6 @@
 using BookRentalService.Interface;
 using BookRentalService.Middleware;
+using BookRentalService.Model;
 using BookRentalService.Repository;
 using BookRentalService.Service;
 using Hangfire;
@@ -20,7 +21,7 @@ builder.Host.UseSerilog((ctx, logconfig) => logconfig
     .WriteTo.File("logs\\myapp.log", rollingInterval: RollingInterval.Day)
     .ReadFrom.Configuration(ctx.Configuration)
     .Enrich.FromLogContext()
-);
+);  
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -28,7 +29,8 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<BookRentalDbContext>(options =>
 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+ 
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 // Register repositories and services
 builder.Services.AddScoped<IBookRepository, BookRepository>();
